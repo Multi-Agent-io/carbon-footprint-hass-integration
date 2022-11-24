@@ -1,0 +1,15 @@
+{
+  "domain": "solarweb",
+  "name": "Solarweb",
+  "config_flow": true,
+  "documentation": "https://github.com/makyul/solarweb",
+  "requirements": ["pandas", "geopy"],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "after_dependencies": ["zone"],
+  "codeowners": ["@makyul", "LoSk-p"],
+  "iot_class": "local_push",
+  "version": "1.1.0"
+}
