@@ -2,7 +2,7 @@
   "domain": "solarweb",
   "name": "Solarweb",
   "config_flow": true,
-  "documentation": "https://github.com/makyul/solarweb",
+  "documentation": "https://github.com/Multi-Agent-io/solarweb-hass-integration/",
   "requirements": ["pandas", "geopy"],
   "ssdp": [],
   "zeroconf": [],
@@ -11,5 +11,5 @@
   "after_dependencies": ["zone"],
   "codeowners": ["@makyul", "LoSk-p"],
   "iot_class": "local_push",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
