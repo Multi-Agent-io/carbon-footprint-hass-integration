@@ -9,7 +9,7 @@
   "homekit": {},
   "dependencies": [],
   "after_dependencies": ["zone"],
-  "codeowners": ["@makyul", "LoSk-p"],
+  "codeowners": ["makyul", "LoSk-p"],
   "iot_class": "local_push",
   "version": "1.2.0"
 }
