@@ -71,7 +71,7 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
     # "Title" is what is displayed to the user for this hub device
     # It is stored internally in HA as part of the device config.
     # See `async_step_user` below for how this is used
-    return {"title": data["email_address"]}
+    return {"title": "Solarweb"}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
