@@ -3,9 +3,10 @@ This file contains functions to burn carbon assets in IPCI network and update bu
 """
 
 from logging import getLogger
-from substrateinterface import SubstrateInterface, Keypair
 
-from .constants import IPCI_REMOTE_WS, IPCI_SS58_ADDRESS_TYPE
+from substrateinterface import Keypair, SubstrateInterface
+
+from const import IPCI_REMOTE_WS, IPCI_SS58_ADDRESS_TYPE
 
 logger = getLogger(__name__)
 

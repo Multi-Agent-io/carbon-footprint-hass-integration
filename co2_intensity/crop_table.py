@@ -12,7 +12,7 @@ last_row = ["Zimbabwe", "279.02789306640625"]
 prev_row = first_row
 
 
-with open("carbon-intensity-electricity.csv", "r") as f_r:
+with open("carbon-intensity-electricity.csv") as f_r:
     with open("carbon-intensity-electricity-01-09-2022_cropped.csv", "w", newline="") as f_w:
 
         csv_orig = csv.reader(f_r)

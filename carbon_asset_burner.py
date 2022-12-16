@@ -3,11 +3,13 @@ This file contains functions to burn carbon assets in IPCI network and update bu
 """
 
 from logging import getLogger
-from scalecodec.types import GenericCall, GenericExtrinsic
-from substrateinterface import SubstrateInterface, Keypair, ExtrinsicReceipt
 
-from .constants import CARBON_ASSET_ID, IPCI_REMOTE_WS
-from .substrate_utils import create_keypair, create_instance
+from scalecodec.types import GenericCall, GenericExtrinsic
+from substrateinterface import ExtrinsicReceipt, Keypair, SubstrateInterface
+
+from const import CARBON_ASSET_ID, IPCI_REMOTE_WS
+
+from .substrate_utils import create_instance, create_keypair
 
 logger = getLogger(__name__)
 
@@ -34,8 +36,9 @@ def burn_carbon_asset(seed: str, tokens_to_burn: float) -> tuple:
         signed_extrinsic, wait_for_inclusion=True, wait_for_finalization=False
     )
 
-    return (receipt.is_success,
-        receipt.extrinsic_hash, 
+    return (
+        receipt.is_success,
+        receipt.extrinsic_hash,
         f"https://polkadot.js.org/apps/?rpc={IPCI_REMOTE_WS[: IPCI_REMOTE_WS.find('://')]}%3A%2F%2F"
         f"{IPCI_REMOTE_WS[IPCI_REMOTE_WS.find('://')+3:]}#/explorer/query/{receipt.block_hash}",
     )

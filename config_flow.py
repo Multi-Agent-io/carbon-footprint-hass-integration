@@ -5,12 +5,10 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant import config_entries, exceptions
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, EMAIL_ADDRESS, PASSWORD, SEED # pylint:disable=unused-import
-from .hub import Hub
+from .const import DOMAIN, EMAIL_ADDRESS, PASSWORD, SEED  # pylint:disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,8 +57,6 @@ async def validate_input(hass: HomeAssistant, data: dict) -> dict[str, Any]:
     # If your PyPI package is not built with async, pass your methods
     # to the executor:
     # await hass.async_add_executor_job(
-    #     your_validate_func, data["username"], data["password"]
-    # )
 
     # If you cannot connect:
     # throw CannotConnect
@@ -94,27 +90,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # `validate_input` above.
         errors = {}
         if user_input is not None:
-            #try:
             info = await validate_input(self.hass, user_input)
-
             return self.async_create_entry(title=info["title"], data=user_input)
-            # except CannotConnect:
-            #     errors["base"] = "cannot_connect"
-            # except InvalidHost:
-            #     # The error string is set here, and should be translated.
-            #     # This example does not currently cover translations, see the
-            #     # comments on `DATA_SCHEMA` for further details.
-            #     # Set the error on the `host` field, not the entire form.
-            #     errors["host"] = "cannot_connect"
-            # except Exception:  # pylint: disable=broad-except
-            #     _LOGGER.exception("Unexpected exception")
-            #     errors["base"] = "unknown"
 
-        # If there is no user input or there were errors, show the form again, including any errors that were found with the input.
-        return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
-        )
-
+        # If there is no user input or there were errors, show the form again,
+        # including any errors that were found with the input.
+        return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
 
 
 class CannotConnect(exceptions.HomeAssistantError):

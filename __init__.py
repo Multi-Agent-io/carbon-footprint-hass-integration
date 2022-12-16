@@ -1,27 +1,29 @@
 """Solarweb integration."""
 from __future__ import annotations
 
+import asyncio
+import functools
+import logging
+import time
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from . import hub
-from .const import DOMAIN
-import asyncio
-
-import logging
-import functools
-from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
 from .carbon_asset_burner import burn_carbon_asset
-import time
+from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = ["sensor"]
 
+
 def to_thread(func: tp.Callable) -> tp.Coroutine:
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
+
     return wrapper
 
 
@@ -29,21 +31,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up from a config entry."""
     _LOGGER.warning("Start setup in init")
     _LOGGER.warning(f"E-mail address: {entry.data['email_address']}")
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(hass, entry.data["email_address"], entry.data["password"])
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(
+        hass, entry.data["email_address"], entry.data["password"]
+    )
 
     try:
-        geo = hass.states.get('zone.home')
+        geo = hass.states.get("zone.home")
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         to_burn = float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate)
-        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(await get_tokens_to_burn_thread(to_burn, geo_str) / 10 ** 9, 2)
+        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
+            await get_tokens_to_burn_thread(to_burn, geo_str) / 10**9, 2
+        )
         _LOGGER.warning(f"Tokens calculated: {hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn}")
     except Exception as e:
         _LOGGER.error(f"Exception in getting tokens: {e}")
         await asyncio.sleep(15)
-        geo = hass.states.get('zone.home')
+        geo = hass.states.get("zone.home")
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         to_burn = float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate)
-        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(await get_tokens_to_burn_thread(to_burn, geo_str) / 10 ** 9, 2)
+        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
+            await get_tokens_to_burn_thread(to_burn, geo_str) / 10**9, 2
+        )
         _LOGGER.warning(f"Tokens calculated: {hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn}")
 
     @to_thread
@@ -69,7 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def burn_footprint(call):
         """Handle the service call."""
-        geo = hass.states.get('zone.home')
+        geo = hass.states.get("zone.home")
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         to_burn = float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate)
         seed = entry.data["seed_secret"]
@@ -78,31 +86,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             title = "CO2 Footprint Compensation"
             text = f"{to_burn} kWh wasn't compensated, not enough tokens"
             await hass.services.async_call(
-                        domain="notify", 
-                        service="persistent_notification", 
-                        service_data={"title": title, "message": text}
-                    )
+                domain="notify", service="persistent_notification", service_data={"title": title, "message": text}
+            )
             return
-        #TODO
+        # TODO
         hass.data[DOMAIN][entry.entry_id].boards[0]._compensated += round(to_burn, 2)
         hass.data[DOMAIN][entry.entry_id].boards[0]._last_hash = tr_hash
         hass.data[DOMAIN][entry.entry_id].boards[0]._link = link
         hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate -= round(to_burn, 2)
-        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(await get_tokens_to_burn_thread(float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate), geo_str) / 10 ** 9, 2)
+        hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
+            await get_tokens_to_burn_thread(float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate), geo_str)
+            / 10**9,
+            2,
+        )
+
         def write_to_file(state, file):
-                with open(f'{file}.txt', 'w') as f:
-                    f.write(str(state))
-        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._compensated, '_compensated')
-        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._last_hash, '_last_hash')
-        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._link, '_link')
+            with open(f"{file}.txt", "w") as f:
+                f.write(str(state))
+
+        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._compensated, "_compensated")
+        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._last_hash, "_last_hash")
+        write_to_file(hass.data[DOMAIN][entry.entry_id].boards[0]._link, "_link")
         await hass.data[DOMAIN][entry.entry_id].boards[0].publish_updates()
         title = "CO2 Footprint Compensation"
         text = f"{to_burn} kWh was compensated"
         await hass.services.async_call(
-                    domain="notify", 
-                    service="persistent_notification", 
-                    service_data={"title": title, "message": text}
-                )
+            domain="notify", service="persistent_notification", service_data={"title": title, "message": text}
+        )
 
     hass.services.async_register(DOMAIN, "burn_footprint", burn_footprint)
 
@@ -112,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    
+
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)

@@ -1,18 +1,11 @@
-import random
+import logging
 
-from homeassistant.const import (
-    DEVICE_CLASS_ENERGY,
-    ENERGY_KILO_WATT_HOUR,
-)
-
-from homeassistant.components.sensor import SensorStateClass, SensorEntityDescription, SensorEntity
-from homeassistant.helpers.entity import Entity
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription, SensorStateClass
+from homeassistant.const import DEVICE_CLASS_ENERGY, ENERGY_KILO_WATT_HOUR
 
 from .const import DOMAIN
 
-import logging
 _LOGGER = logging.getLogger(__name__)
-
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -45,7 +38,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 
 class SensorBase(SensorEntity):
-   
+
     should_poll = False
 
     def __init__(self, board):
@@ -72,7 +65,6 @@ class SensorBase(SensorEntity):
 
 
 class ToGridTodaySensor(SensorBase):
-
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -82,21 +74,21 @@ class ToGridTodaySensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} To Grid Today"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._to_grid_today
 
-class FromGridTodaySensor(SensorBase):
 
+class FromGridTodaySensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -106,22 +98,21 @@ class FromGridTodaySensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} From Grid Today"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
-    
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._from_grid_today
 
-class ProductionTodaySensor(SensorBase):
 
+class ProductionTodaySensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -131,22 +122,21 @@ class ProductionTodaySensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Production Today"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
-    
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._production
 
-class ConsumptionTodaySensor(SensorBase):
 
+class ConsumptionTodaySensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -156,22 +146,21 @@ class ConsumptionTodaySensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Consumption Today"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
-    
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._consumption
 
-class OwnConsumptionTodaySensor(SensorBase):
 
+class OwnConsumptionTodaySensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -181,23 +170,21 @@ class OwnConsumptionTodaySensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Own Consumption Today"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
-    
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._own_consumption
 
 
 class ToGridTotalSensor(SensorBase):
-
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -207,22 +194,21 @@ class ToGridTotalSensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} To Grid Total"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.TOTAL,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.TOTAL,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._to_grid_total
 
-class FromGridTotalSensor(SensorBase):
 
+class FromGridTotalSensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -232,21 +218,21 @@ class FromGridTotalSensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} From Grid Total"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.TOTAL,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.TOTAL,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._from_grid_total
 
-class ProductionTotalSensor(SensorBase):
 
+class ProductionTotalSensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -256,22 +242,21 @@ class ProductionTotalSensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Production Total"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.TOTAL,
-                                )
-    
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.TOTAL,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._production_total
 
-class ConsumptionTotalSensor(SensorBase):
 
+class ConsumptionTotalSensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -281,22 +266,21 @@ class ConsumptionTotalSensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Consumption Total"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.TOTAL,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.TOTAL,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._consumption_total
 
-class OwnConsumptionSensor(SensorBase):
 
+class OwnConsumptionSensor(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -306,22 +290,21 @@ class OwnConsumptionSensor(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Own Consumption Total"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.TOTAL,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.TOTAL,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._own_consumption_total
 
-class Compensated(SensorBase):
 
+class Compensated(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -331,23 +314,21 @@ class Compensated(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Compensated"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._compensated
 
 
 class LastHash(SensorBase):
-
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -357,19 +338,18 @@ class LastHash(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} transaction hash"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._last_hash
 
-class Link(SensorBase):
 
+class Link(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -379,19 +359,18 @@ class Link(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} transaction link"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                )
-
+            key="setpoint",
+            name=self._attr_name,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
-        return self._board._link
-  
-class ToCompensate(SensorBase):
 
+        return self._board._link
+
+
+class ToCompensate(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -401,21 +380,21 @@ class ToCompensate(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} To Compensate"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
-                                    device_class=DEVICE_CLASS_ENERGY,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+            device_class=DEVICE_CLASS_ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._to_compensate
 
-class TokensToBurn(SensorBase):
 
+class TokensToBurn(SensorBase):
     def __init__(self, board):
         """Initialize the sensor."""
         super().__init__(board)
@@ -425,13 +404,13 @@ class TokensToBurn(SensorBase):
         # The name of the entity
         self._attr_name = f"{self._board.name} Tokens"
         self.entity_description = SensorEntityDescription(
-                                    key="setpoint",
-                                    name=self._attr_name,
-                                    state_class=SensorStateClass.MEASUREMENT,
-                                )
+            key="setpoint",
+            name=self._attr_name,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        
+
         return self._board._tokens_to_burn

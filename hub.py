@@ -1,31 +1,31 @@
 from __future__ import annotations
 
 import asyncio
-import random
-from datetime import timedelta
-import imaplib
-from email.header import decode_header
-import re
-import pandas as pd
 import functools
+import imaplib
+import logging
+import random
+import re
+from datetime import timedelta
 
-from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
-
+import pandas as pd
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
-import logging
+from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
+
 _LOGGER = logging.getLogger(__name__)
+
 
 def to_thread(func: tp.Callable) -> tp.Coroutine:
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
+
     return wrapper
 
 
 class Hub:
-
     def __init__(self, hass: HomeAssistant, email_address: str, password: str) -> None:
         """Init hub."""
         self._hass = hass
@@ -47,11 +47,16 @@ class Hub:
 
 
 class Board:
-
-    def __init__(self, hass, board_id: str, name: str, 
-                email_address: str, password: str, 
-                imap_server: str = "imap.gmail.com",
-                sender_address: str = "noreply@solarweb.com") -> None: 
+    def __init__(
+        self,
+        hass,
+        board_id: str,
+        name: str,
+        email_address: str,
+        password: str,
+        imap_server: str = "imap.gmail.com",
+        sender_address: str = "noreply@solarweb.com",
+    ) -> None:
         """Init."""
         _LOGGER.warning("Start setup board")
         self._id = board_id
@@ -67,44 +72,40 @@ class Board:
         self._own_consumption = 0
         self._to_grid_today = 0
         self._from_grid_today = 0
-        
-        self._last_hash = '0'
-        self._link = '0'
 
-        
-        
-
+        self._last_hash = "0"
+        self._link = "0"
 
         def read_from_file(state):
             try:
-                with open(f'{state}.txt', 'r') as f:
-                        value = f.read()
-            except Exception as e:
-                    value = 0
+                with open(f"{state}.txt") as f:
+                    value = f.read()
+            except Exception:
+                value = 0
             return value
 
-        self._old_id = read_from_file('_old_id')
-        self._production_total = round(float(read_from_file('_production_total')), 2)
-        self._consumption_total = round(float(read_from_file('_consumption_total')), 2)
-        self._own_consumption_total = round(float(read_from_file('_own_consumption_total')), 2)
-        self._to_grid_total = round(float(read_from_file('_to_grid_total')), 2)
-        self._from_grid_total = round(float(read_from_file('_from_grid_total')), 2)
-        self._compensated = round(float(read_from_file('_compensated')), 2)
-        self._to_compensate = round(float(self._consumption_total) - float(self._production_total) - float(self._compensated), 2)
+        self._old_id = read_from_file("_old_id")
+        self._production_total = round(float(read_from_file("_production_total")), 2)
+        self._consumption_total = round(float(read_from_file("_consumption_total")), 2)
+        self._own_consumption_total = round(float(read_from_file("_own_consumption_total")), 2)
+        self._to_grid_total = round(float(read_from_file("_to_grid_total")), 2)
+        self._from_grid_total = round(float(read_from_file("_from_grid_total")), 2)
+        self._compensated = round(float(read_from_file("_compensated")), 2)
+        self._to_compensate = round(
+            float(self._consumption_total) - float(self._production_total) - float(self._compensated), 2
+        )
         self._hass = hass
         self._tokens_to_burn = 0
-        #check new emails once a minute
+        # check new emails once a minute
         self._unsub = async_track_time_interval(hass, self.check_new_mails, timedelta(minutes=30))
-
 
     @to_thread
     def get_tokens(self, energy, hass):
-        geo = hass.states.get('zone.home')
+        geo = hass.states.get("zone.home")
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         tokens_to_burn = get_tokens_to_burn(geo=geo_str, kwh=energy)
         self._tokens_to_burn = tokens_to_burn
-        return tokens_to_burn        
-
+        return tokens_to_burn
 
     @to_thread
     def parse_url(self, url):
@@ -114,26 +115,23 @@ class Board:
 
     def parse_report(self, data):
         info = data.iloc[1][1:]
-        info = pd.to_numeric(info, errors='coerce')
+        info = pd.to_numeric(info, errors="coerce")
         info = info.apply(lambda x: x / 1000)
         info = info.apply(lambda x: round(x, 2))
 
-        #pd.to_numeric(s, errors='coerce')
         return info
 
     async def check_new_mails(self, event):
         try:
-            #_LOGGER.warning(f"Time changed: {event}")
             imap = imaplib.IMAP4_SSL(self.imap_server)
             imap.login(self.email_address, self.password)
             imap.select("INBOX")
-            messages = imap.uid('search', "ALL", None, f'(FROM "{self.sender_address}")')
+            messages = imap.uid("search", "ALL", None, f'(FROM "{self.sender_address}")')
             try:
                 last_id = messages[1][0].decode().split()[-1]
-                #_LOGGER.warning(f"ids: {last_id} last, old {self._old_id}")
-                with open('_old_id.txt', 'w') as f:
-                    #uncomment +1 to test updating
-                    f.write(str(int(last_id)))#+1))
+                with open("_old_id.txt", "w") as f:
+                    # uncomment +1 to test updating
+                    f.write(str(int(last_id)))  # +1))
                 if self._old_id == last_id:
                     return
                 else:
@@ -141,28 +139,29 @@ class Board:
             except Exception as e:
                 _LOGGER.error(f"Exception: no such letters: {e}")
                 return
-            type, data = imap.uid( "fetch" , str(last_id), 'RFC822')
-            #TODO correct regex
-            link_pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-            text = data[0][1].decode('UTF-8')
-            # _LOGGER.warning(f"Text message: \n{text}")
+            type, data = imap.uid("fetch", str(last_id), "RFC822")
+            # TODO correct regex
+            link_pattern = re.compile(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+            text = data[0][1].decode("UTF-8")
             text = text.split("href='")
             url = text[1].split("'>Download")
             url = url[0]
-            url.replace('\r\n', '')
-            # text = text.replace('\r\n', '').replace('3D', '').replace('a=', 'a')
-            # search = link_pattern.search(text)
-            # url = search.group(0).rstrip("'>Download</a></td></tr></table><br")
+            url.replace("\r\n", "")
             _LOGGER.error(f"Link: {url}")
-            #_LOGGER.warning(f"{url}")
             try:
-                [self._production, self._consumption, self._own_consumption, self._to_grid_today, self._from_grid_today] = await self.parse_url(url)
+                [
+                    self._production,
+                    self._consumption,
+                    self._own_consumption,
+                    self._to_grid_today,
+                    self._from_grid_today,
+                ] = await self.parse_url(url)
                 _LOGGER.warning(f"New data!")
             except Exception as e:
                 _LOGGER.error(f"Error in parsing: {e}")
 
             def write_to_file(state, file):
-                with open(f'{file}.txt', 'w') as f:
+                with open(f"{file}.txt", "w") as f:
                     f.write(str(state))
 
             self._production_total = float(self._production_total) + float(self._production)
@@ -170,20 +169,19 @@ class Board:
             self._own_consumption_total = float(self._own_consumption_total) + float(self._own_consumption)
             self._to_grid_total = float(self._to_grid_total) + float(self._to_grid_today)
             self._from_grid_total = float(self._from_grid_total) + float(self._from_grid_today)
-            self._to_compensate = round(float(self._consumption_total) - float(self._production_total) - float(self._compensated), 2)
-            geo = self._hass.states.get('zone.home')
+            self._to_compensate = round(
+                float(self._consumption_total) - float(self._production_total) - float(self._compensated), 2
+            )
+            geo = self._hass.states.get("zone.home")
             geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
-            self._tokens_to_burn = round(await get_tokens_to_burn_thread(self._to_compensate, geo_str) / 10 ** 9, 2)
+            self._tokens_to_burn = round(await get_tokens_to_burn_thread(self._to_compensate, geo_str) / 10**9, 2)
             _LOGGER.warning(f"Tokens calculated: {self._tokens_to_burn}")
 
-
-
-
-            write_to_file(self._production_total, '_production_total')
-            write_to_file(self._consumption_total, '_consumption_total')
-            write_to_file(self._own_consumption_total, '_own_consumption_total')
-            write_to_file(self._to_grid_total, '_to_grid_total')
-            write_to_file(self._from_grid_total, '_from_grid_total')
+            write_to_file(self._production_total, "_production_total")
+            write_to_file(self._consumption_total, "_consumption_total")
+            write_to_file(self._own_consumption_total, "_own_consumption_total")
+            write_to_file(self._to_grid_total, "_to_grid_total")
+            write_to_file(self._from_grid_total, "_from_grid_total")
 
             await self.publish_updates()
             _LOGGER.warning(f"New energy states")
@@ -222,9 +220,3 @@ class Board:
     def battery_level(self) -> int:
         """Battery level as a percentage."""
         return self._energy
-
-
-
-
-
-

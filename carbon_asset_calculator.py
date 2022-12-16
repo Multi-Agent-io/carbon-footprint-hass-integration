@@ -2,22 +2,25 @@
 Perform various carbon asset burning process calculations.
 """
 
+import asyncio
 import csv
+import functools
+from logging import getLogger
 
 from geopy.geocoders import Nominatim
-from logging import getLogger
-import asyncio
 
-from .constants import CO2_INTENSITY_TABLE_PATH, WORLD_CO2_INTENSITY
-import functools
+from const import CO2_INTENSITY_TABLE_PATH, WORLD_CO2_INTENSITY
 
 logger = getLogger(__name__)
+
 
 def to_thread(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
+
     return wrapper
+
 
 @to_thread
 def get_tokens_to_burn_thread(kwh: float, geo: str) -> float:
@@ -42,7 +45,7 @@ def get_tokens_to_burn_thread(kwh: float, geo: str) -> float:
         logger.info(f"Country based on geo: {country}.")
 
         logger.info(f"Getting CO2 intensity in g/kWh for {country}.")
-        with open(CO2_INTENSITY_TABLE_PATH, "r") as intensity:
+        with open(CO2_INTENSITY_TABLE_PATH) as intensity:
             intensity_csv = csv.reader(intensity)
             for row in intensity_csv:
                 if row[0] == country:
@@ -58,6 +61,7 @@ def get_tokens_to_burn_thread(kwh: float, geo: str) -> float:
     logger.info(f"Number of metric tons of CO2 / Carbon assets to burn for {kwh} kWh: {tons_co2}.")
 
     return tons_co2 * 10**9  # 1 Carbon asset per metric tonn of co2, decimal of 9 for the asset in the blockchain
+
 
 def get_tokens_to_burn(kwh: float, geo: str) -> float:
     """
@@ -81,7 +85,7 @@ def get_tokens_to_burn(kwh: float, geo: str) -> float:
         logger.info(f"Country based on geo: {country}.")
 
         logger.info(f"Getting CO2 intensity in g/kWh for {country}.")
-        with open(CO2_INTENSITY_TABLE_PATH, "r") as intensity:
+        with open(CO2_INTENSITY_TABLE_PATH) as intensity:
             intensity_csv = csv.reader(intensity)
             for row in intensity_csv:
                 if row[0] == country:
