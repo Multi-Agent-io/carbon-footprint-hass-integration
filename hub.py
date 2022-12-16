@@ -12,7 +12,7 @@ import pandas as pd
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
-from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
+from .carbon_asset_calculator import calculate_compensation_amt_tokens
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ class Board:
     def get_tokens(self, energy, hass):
         geo = hass.states.get("zone.home")
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
-        tokens_to_burn = get_tokens_to_burn(geo=geo_str, kwh=energy)
+        tokens_to_burn = calculate_compensation_amt_tokens(geo=geo_str, kwh=energy)
         self._tokens_to_burn = tokens_to_burn
         return tokens_to_burn
 

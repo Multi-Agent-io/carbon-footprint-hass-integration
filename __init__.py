@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 
 from . import hub
 from .carbon_asset_burner import burn_carbon_asset
-from .carbon_asset_calculator import get_tokens_to_burn, get_tokens_to_burn_thread
+from .carbon_asset_calculator import calculate_compensation_amt_tokens, calculate_compensation_amt_tokens_async
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         to_burn = float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate)
         hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
-            await get_tokens_to_burn_thread(to_burn, geo_str) / 10**9, 2
+            await calculate_compensation_amt_tokens_async(to_burn, geo_str) / 10**9, 2
         )
         _LOGGER.warning(f"Tokens calculated: {hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn}")
     except Exception as e:
@@ -50,7 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
         to_burn = float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate)
         hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
-            await get_tokens_to_burn_thread(to_burn, geo_str) / 10**9, 2
+            await calculate_compensation_amt_tokens_async(to_burn, geo_str) / 10**9, 2
         )
         _LOGGER.warning(f"Tokens calculated: {hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn}")
 
@@ -58,13 +58,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def burn(energy, seed, geo_str):
         _LOGGER.warning(f"Start burning {energy} kWh")
         try:
-            tokens_to_burn: float = get_tokens_to_burn(geo=geo_str, kwh=energy)
+            tokens_to_burn: float = calculate_compensation_amt_tokens(geo=geo_str, kwh=energy)
             is_success, tr_hash, link = burn_carbon_asset(seed=seed, tokens_to_burn=tokens_to_burn)
             _LOGGER.warning(f"Trying to burn {energy}, hash: {tr_hash}")
             _LOGGER.warning(f"Is success {is_success}")
         except TimeoutError:
             time.sleep(15)
-            tokens_to_burn: float = get_tokens_to_burn(geo=geo_str, kwh=energy)
+            tokens_to_burn: float = calculate_compensation_amt_tokens(geo=geo_str, kwh=energy)
             is_success, tr_hash, link = burn_carbon_asset(seed=seed, tokens_to_burn=tokens_to_burn)
             _LOGGER.warning(f"Trying to burn {energy}, hash: {tr_hash}")
             _LOGGER.warning(f"Is success {is_success}")
@@ -95,7 +95,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN][entry.entry_id].boards[0]._link = link
         hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate -= round(to_burn, 2)
         hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn = round(
-            await get_tokens_to_burn_thread(float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate), geo_str)
+            await calculate_compensation_amt_tokens_async(
+                float(hass.data[DOMAIN][entry.entry_id].boards[0]._to_compensate), geo_str
+            )
             / 10**9,
             2,
         )
