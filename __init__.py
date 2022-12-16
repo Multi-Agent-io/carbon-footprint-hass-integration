@@ -2,38 +2,27 @@
 from __future__ import annotations
 
 import asyncio
-import functools
 import logging
 import time
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from . import hub
-from .carbon_asset_burner import burn_carbon_asset
-from .carbon_asset_calculator import calculate_compensation_amt_tokens, calculate_compensation_amt_tokens_async
+from carbon_offset import burn_carbon_asset_async, calculate_compensation_amt_tokens_async
+
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-
 PLATFORMS: list[str] = ["sensor"]
-
-
-def to_thread(func: tp.Callable) -> tp.Coroutine:
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-
-    return wrapper
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up from a config entry."""
     _LOGGER.warning("Start setup in init")
     _LOGGER.warning(f"E-mail address: {entry.data['email_address']}")
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(
-        hass, entry.data["email_address"], entry.data["password"]
-    )
+    # hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub.Hub(
+    #     hass, entry.data["email_address"], entry.data["password"]
+    # )
 
     try:
         geo = hass.states.get("zone.home")
@@ -54,18 +43,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         _LOGGER.warning(f"Tokens calculated: {hass.data[DOMAIN][entry.entry_id].boards[0]._tokens_to_burn}")
 
-    @to_thread
-    def burn(energy, seed, geo_str):
+    async def burn(energy, seed, geo_str):
         _LOGGER.warning(f"Start burning {energy} kWh")
         try:
-            tokens_to_burn: float = calculate_compensation_amt_tokens(geo=geo_str, kwh=energy)
-            is_success, tr_hash, link = burn_carbon_asset(seed=seed, tokens_to_burn=tokens_to_burn)
+            tokens_to_burn: float = await calculate_compensation_amt_tokens_async(geo=geo_str, kwh=energy)
+            is_success, tr_hash, link = await burn_carbon_asset_async(seed=seed, tokens_to_burn=tokens_to_burn)
             _LOGGER.warning(f"Trying to burn {energy}, hash: {tr_hash}")
             _LOGGER.warning(f"Is success {is_success}")
         except TimeoutError:
             time.sleep(15)
-            tokens_to_burn: float = calculate_compensation_amt_tokens(geo=geo_str, kwh=energy)
-            is_success, tr_hash, link = burn_carbon_asset(seed=seed, tokens_to_burn=tokens_to_burn)
+            tokens_to_burn: float = await calculate_compensation_amt_tokens_async(geo=geo_str, kwh=energy)
+            is_success, tr_hash, link = await burn_carbon_asset_async(seed=seed, tokens_to_burn=tokens_to_burn)
             _LOGGER.warning(f"Trying to burn {energy}, hash: {tr_hash}")
             _LOGGER.warning(f"Is success {is_success}")
         except Exception as e:
