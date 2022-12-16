@@ -1,15 +1,24 @@
 {
-  "domain": "solarweb",
-  "name": "Solarweb",
+  "domain": "carbon_footprint",
+  "name": "Carbon footprint",
   "config_flow": true,
-  "documentation": "https://github.com/Multi-Agent-io/solarweb-hass-integration/",
-  "requirements": ["pandas", "geopy"],
+  "documentation": "https://github.com/Multi-Agent-io/carbon-footprint-hass-integration",
+  "requirements": [
+    "geopy",
+    "substrate-interface"
+  ],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
   "dependencies": [],
-  "after_dependencies": ["zone"],
-  "codeowners": ["makyul", "LoSk-p"],
+  "after_dependencies": [
+    "zone"
+  ],
+  "codeowners": [
+    "makyul",
+    "LoSk-p",
+    "arseniiarsenii"
+  ],
   "iot_class": "local_push",
-  "version": "1.2.0"
+  "version": "0.1.0"
 }
