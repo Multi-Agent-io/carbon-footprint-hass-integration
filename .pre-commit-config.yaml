@@ -106,3 +106,7 @@ repos:
         description: Detects commited private keys
       - id: pretty-format-json
         description: Prettifies JSON
+        args:
+          - --autofix
+          - --no-sort-keys
+          - --no-ensure-ascii
